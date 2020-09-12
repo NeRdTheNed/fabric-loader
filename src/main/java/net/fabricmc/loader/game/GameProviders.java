@@ -16,13 +16,16 @@
 
 package net.fabricmc.loader.game;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 
 public final class GameProviders {
 	private GameProviders() { }
 
 	public static List<GameProvider> create() {
-		return Collections.singletonList(new MinecraftGameProvider());
+		ArrayList<GameProvider> gameProviders = new ArrayList<GameProvider>();
+		gameProviders.add(new MinecraftGameProvider());
+		gameProviders.add(new BukkitMinecraftGameProvider());
+		return gameProviders;
 	}
 }

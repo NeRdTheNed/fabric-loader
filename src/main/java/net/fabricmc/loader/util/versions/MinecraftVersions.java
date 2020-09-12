@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package net.fabricmc.loader.minecraft;
+package net.fabricmc.loader.util.versions;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,7 +40,7 @@ import net.fabricmc.loader.util.version.SemanticVersionImpl;
 import net.fabricmc.loader.util.version.SemanticVersionPredicateParser;
 import net.fabricmc.loader.util.version.VersionParsingException;
 
-public final class McVersionLookup {
+public final class MinecraftVersions {
 	private static final Pattern VERSION_PATTERN = Pattern.compile(
 			"0\\.\\d+(\\.\\d+)?a?(_\\d+)?|" // match classic versions first: 0.1.2a_34
 			+ "\\d+\\.\\d+(\\.\\d+)?(-pre\\d+| Pre-[Rr]elease \\d+)?|" // modern non-snapshot: 1.2, 1.2.3, optional -preN or " Pre-Release N" suffix
@@ -61,8 +61,8 @@ public final class McVersionLookup {
 	private static final Pattern INDEV_PATTERN = Pattern.compile("(?:inf-|Inf?dev )(?:0\\.31 )?(\\d+(-\\d+)?)");
 	private static final String STRING_DESC = "Ljava/lang/String;";
 
-	public static McVersion getVersion(Path gameJar) {
-		McVersion ret;
+	public static MinecraftVersion getVersion(Path gameJar) {
+		MinecraftVersion ret;
 
 		// check various known files for version information
 
@@ -112,7 +112,7 @@ public final class McVersionLookup {
 		return fromFileName(gameJar.getFileName().toString());
 	}
 
-	private static McVersion fromVersionJson(InputStream is) {
+	private static MinecraftVersion fromVersionJson(InputStream is) {
 		try (JsonReader reader = new JsonReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
 			String id = null;
 			String name = null;
@@ -137,7 +137,7 @@ public final class McVersionLookup {
 				if (id.length() < name.length()) name = id;
 			}
 
-			if (name != null && release != null) return new McVersion(name, release);
+			if (name != null && release != null) return new MinecraftVersion(name, release);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -145,14 +145,14 @@ public final class McVersionLookup {
 		return null;
 	}
 
-	private static <T extends ClassVisitor & Analyzer> McVersion fromAnalyzer(InputStream is, T analyzer) {
+	private static <T extends ClassVisitor & Analyzer> MinecraftVersion fromAnalyzer(InputStream is, T analyzer) {
 		try {
 			ClassReader cr = new ClassReader(is);
 			cr.accept(analyzer, ClassReader.SKIP_FRAMES | ClassReader.SKIP_DEBUG);
 			String result = analyzer.getResult();
 
 			if (result != null) {
-				return new McVersion(result, getRelease(result));
+				return new MinecraftVersion(result, getRelease(result));
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -165,12 +165,12 @@ public final class McVersionLookup {
 		return null;
 	}
 
-	private static McVersion fromFileName(String name) {
+	private static MinecraftVersion fromFileName(String name) {
 		// strip extension
 		int pos = name.lastIndexOf('.');
 		if (pos > 0) name = name.substring(0, pos);
 
-		return new McVersion(name, getRelease(name));
+		return new MinecraftVersion(name, getRelease(name));
 	}
 
 	private static String getRelease(String version) {
@@ -688,13 +688,10 @@ public final class McVersionLookup {
 		}
 	}
 
-	public static final class McVersion {
-		private McVersion(String name, String release) {
-			this.raw = name;
-			this.normalized = normalizeVersion(name, release);
+	public static final class MinecraftVersion extends ApplicationVersion {
+		private MinecraftVersion(String name, String release) {
+			this.rawVersion = name;
+			this.normalizedVersion = normalizeVersion(name, release);
 		}
-
-		public final String raw; // raw version, e.g. 18w12a
-		public final String normalized; // normalized version, usually Semver compliant version containing release and pre-release as applicable
 	}
 }

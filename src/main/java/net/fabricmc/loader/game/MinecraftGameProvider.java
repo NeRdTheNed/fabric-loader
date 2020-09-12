@@ -24,9 +24,11 @@ import net.fabricmc.loader.entrypoint.minecraft.EntrypointPatchFML125;
 import net.fabricmc.loader.entrypoint.minecraft.EntrypointPatchHook;
 import net.fabricmc.loader.launch.common.FabricLauncherBase;
 import net.fabricmc.loader.metadata.BuiltinModMetadata;
-import net.fabricmc.loader.minecraft.McVersionLookup;
-import net.fabricmc.loader.minecraft.McVersionLookup.McVersion;
 import net.fabricmc.loader.util.Arguments;
+import net.fabricmc.loader.util.versions.MinecraftVersions;
+import net.fabricmc.loader.util.versions.MinecraftVersions.MinecraftVersion;
+import net.fabricmc.loader.util.versions.ApplicationVersion;
+
 import java.io.File;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
@@ -39,14 +41,14 @@ import java.util.List;
 import java.util.Optional;
 
 public class MinecraftGameProvider implements GameProvider {
-	private static final Gson GSON = new Gson();
+	protected static final Gson GSON = new Gson();
 
-	private EnvType envType;
-	private String entrypoint;
-	private Arguments arguments;
-	private Path gameJar, realmsJar;
-	private McVersion versionData;
-	private boolean hasModLoader = false;
+	protected EnvType envType;
+	protected String entrypoint;
+	protected Arguments arguments;
+	protected Path gameJar, realmsJar;
+	protected ApplicationVersion versionData;
+	protected boolean hasModLoader = false;
 
 	public static final EntrypointTransformer TRANSFORMER = new EntrypointTransformer(it -> Arrays.asList(
 		new EntrypointPatchHook(it),
@@ -66,12 +68,12 @@ public class MinecraftGameProvider implements GameProvider {
 
 	@Override
 	public String getRawGameVersion() {
-		return versionData.raw;
+		return versionData.getRawVersion();
 	}
 
 	@Override
 	public String getNormalizedGameVersion() {
-		return versionData.normalized;
+		return versionData.getNormalizedVersion();
 	}
 
 	@Override
@@ -145,7 +147,7 @@ public class MinecraftGameProvider implements GameProvider {
 		gameJar = entrypointResult.get().entrypointPath;
 		realmsJar = GameProviderHelper.getSource(loader, "realmsVersion").orElse(null);
 		hasModLoader = GameProviderHelper.getSource(loader, "ModLoader.class").isPresent();
-		versionData = McVersionLookup.getVersion(gameJar);
+		versionData = MinecraftVersions.getVersion(gameJar);
 
 		return true;
 	}

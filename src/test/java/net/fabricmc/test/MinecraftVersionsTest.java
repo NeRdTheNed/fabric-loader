@@ -27,10 +27,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import net.fabricmc.loader.minecraft.McVersionLookup;
-import net.fabricmc.loader.minecraft.McVersionLookup.McVersion;
+import net.fabricmc.loader.util.versions.MinecraftVersions;
+import net.fabricmc.loader.util.versions.MinecraftVersions.MinecraftVersion;
 
-public final class McVersionLookupTest {
+public final class MinecraftVersionsTest {
 	public static void main(String[] args) throws IOException {
 		if (args.length != 1) throw new RuntimeException("usage: <file/dir-to-try>");
 
@@ -68,11 +68,11 @@ public final class McVersionLookupTest {
 	}
 
 	private static void check(Path file, String name, List<String> invalid) {
-		McVersion result = McVersionLookup.getVersion(file);
-		String msg = String.format("%s: %s (%s)", name, result.normalized, result.raw);
+		MinecraftVersion result = MinecraftVersions.getVersion(file);
+		String msg = String.format("%s: %s (%s)", name, result.getNormalizedVersion(), result.getRawVersion());
 		System.out.println(msg);
 
-		if (!pattern.matcher(result.normalized).matches()) {
+		if (!pattern.matcher(result.getNormalizedVersion()).matches()) {
 			System.out.println("** invalid!");
 			invalid.add(msg);
 		}
